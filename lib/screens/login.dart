@@ -1,5 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -9,6 +15,42 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkCurrentUser();
+    });
+  }
+
+    Future<void> checkCurrentUser() async {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final String? userId ="1234xx";
+      final String? username = user.displayName;
+      final String? email = user.email;
+      final String? profilepicture = user.photoURL;
+      print(">>>>>>>>>>>>>>>>>>>>User IDx: $userId");
+      print("User is logged in already");
+      print("Username: $username");
+      print("Email: $email");
+      print("Profile Picture: $profilepicture");
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home',
+          (route) => false,
+          arguments: {
+            'username': username ?? '',
+            'email': email ?? '',
+            'profilepicture': profilepicture ?? '',
+          },
+        );
+      }
+    }
+  }
+
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool circular = false;
@@ -31,17 +73,19 @@ class _LoginState extends State<Login> {
             children: [
               const SizedBox(height: 20),
               // logo image here
-              Image(image: AssetImage("assets/icon/logo.png"), width: 200, height: 200),
+              Image(
+                  image: AssetImage("assets/icon/logo.png"),
+                  width: 200,
+                  height: 200),
               const SizedBox(height: 20),
               buttonItem("assets/google.svg", "Continue with Google", 25, () {
-                // print
-                print("Login with Google");
-                Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
+                handleGoogleSignIn();
               }),
               const SizedBox(height: 15),
               buttonItem("assets/phone.svg", "Continue with Phone", 30, () {}),
               const SizedBox(height: 10),
-              const Text("Or", style: TextStyle(color: Colors.black, fontSize: 18)),
+              const Text("Or",
+                  style: TextStyle(color: Colors.black, fontSize: 18)),
               const SizedBox(height: 10),
               textItem("Email", _emailController, false),
               const SizedBox(height: 15),
@@ -65,7 +109,54 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Widget buttonItem(String imagePath, String buttonName, double size, Function() onTap) {
+  void handleGoogleSignIn() async {
+    User? user = await signInWithGoogle();
+    if (user != null) {
+      final String? userId = user.uid;
+      final String? username = user.displayName;
+      final String? email = user.email;
+      final String? profilepicture = user.photoURL;
+      print(">>>>>>>>>>>>>>>>>>>>User IDs: $userId");
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home',
+          (route) => false,
+          arguments: {
+            'username': username ?? '',
+            'email': email ?? '',
+            'profilepicture': profilepicture ?? '',
+          },
+        );
+      }
+    }
+  }
+
+  Future<User?> signInWithGoogle() async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+
+    final GoogleSignInAccount? googleSignInAccount =
+        await googleSignIn.signIn();
+
+    final GoogleSignInAuthentication googleSignInAuthentication =
+        await googleSignInAccount!.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+
+    final UserCredential userCredential =
+        await auth.signInWithCredential(credential);
+    final User? user = userCredential.user;
+    print("xxxx user: ");
+    print(user);
+    return user;
+  }
+
+  Widget buttonItem(
+      String imagePath, String buttonName, double size, Function() onTap) {
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -104,7 +195,8 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Widget textItem(String name, TextEditingController controller, bool obscureText) {
+  Widget textItem(
+      String name, TextEditingController controller, bool obscureText) {
     return Container(
       width: MediaQuery.of(context).size.width - 70,
       height: 55,
@@ -155,9 +247,13 @@ class _LoginState extends State<Login> {
         child: Center(
           child: circular
               ? const CircularProgressIndicator()
-              : Text(name, style: const TextStyle(color: Colors.white, fontSize: 20)),
+              : Text(name,
+                  style: const TextStyle(color: Colors.white, fontSize: 20)),
         ),
       ),
     );
   }
+}
+
+class FirebaseFirestore {
 }

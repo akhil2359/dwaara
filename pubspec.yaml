@@ -38,6 +38,9 @@ dependencies:
   flutter_launcher_icons: ^0.13.1
   image_picker: ^1.0.4
   flutter_svg: ^2.0.5
+  google_sign_in: ^6.1.5
+  firebase_core: ^2.21.0
+  firebase_auth: ^4.12.1
 
 dev_dependencies:
   flutter_test:
