@@ -54,7 +54,7 @@ class _LoginState extends State<Login> {
                 "Forgot Password ?",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Colors.grey,
                   fontSize: 17,
                 ),
               ),
@@ -77,7 +77,7 @@ class _LoginState extends State<Login> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
             side: const BorderSide(
-              width: 1,
+              width: 0.5,
               color: Colors.grey,
             ),
           ),
@@ -93,7 +93,7 @@ class _LoginState extends State<Login> {
               Text(
                 buttonName,
                 style: const TextStyle(
-                  color: Colors.grey,
+                  color: Colors.black,
                   fontSize: 17,
                 ),
               ),
