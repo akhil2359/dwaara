@@ -1,9 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 
@@ -35,6 +33,7 @@ class _LoginState extends State<Login> {
       print("Username: $username");
       print("Email: $email");
       print("Profile Picture: $profilepicture");
+      createRecordInUserCollection(username, email, profilepicture);
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -109,6 +108,29 @@ class _LoginState extends State<Login> {
     );
   }
 
+  void createRecordInUserCollection(Name, Email, ProfilePicture) async {
+    // Create a CollectionReference called users that references the firestore collection
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
+
+    FirebaseAuth auth = FirebaseAuth.instance;
+    final User? user = auth.currentUser;
+    final uid = user!.uid;
+    // try and catch user creation, check if already exists and update if so
+    try {
+      await users
+          .doc(uid)
+          .set({
+            'name': Name,
+            'email': Email,
+            'profilepicture': ProfilePicture,
+          })
+          .then((value) => print("User Added"))
+          .catchError((error) => print("Failed to add user: $error"));
+    } catch (e) {
+      print(e);
+    } 
+  }
+
   void handleGoogleSignIn() async {
     User? user = await signInWithGoogle();
     if (user != null) {
@@ -116,6 +138,7 @@ class _LoginState extends State<Login> {
       final String? username = user.displayName;
       final String? email = user.email;
       final String? profilepicture = user.photoURL;
+      createRecordInUserCollection(username, email, profilepicture);
       print(">>>>>>>>>>>>>>>>>>>>User IDs: $userId");
       if (mounted) {
         Navigator.pushNamedAndRemoveUntil(
@@ -253,7 +276,4 @@ class _LoginState extends State<Login> {
       ),
     );
   }
-}
-
-class FirebaseFirestore {
 }
