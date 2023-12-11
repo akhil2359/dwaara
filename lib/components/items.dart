@@ -1,17 +1,17 @@
 import 'dart:io';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../services/firestore.dart';
 
 class Items extends StatelessWidget {
   const Items({Key? key, required this.items, required this.name})
       : super(key: key);
 
-  final List<String> items;
+  final List items;
   final String name;
 
   @override
@@ -34,9 +34,10 @@ class Items extends StatelessWidget {
                   child: const Text(
                     "View All",
                     style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold),
+                      fontSize: 14,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 )
               else
@@ -58,7 +59,7 @@ class Items extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                       color: Colors.grey[200],
                       image: DecorationImage(
-                        image: Image.network(items[index]).image,
+                        image: CachedNetworkImageProvider(items[index]),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -111,7 +112,17 @@ class Items extends StatelessWidget {
                                     await referenceImage.getDownloadURL();
                                 print(">>>>image url is: ");
                                 print(imageUrl);
-                                createRecordInUserCollection(
+
+                                if (name == "Shirts") {
+                                  userController.appendShirt(imageUrl);
+                                } else if (name == "Pants") {
+                                  userController.appendPants(imageUrl);
+                                } else if (name == "Shoes") {
+                                  userController.appendShoes(imageUrl);
+                                } else if (name == "Accessories") {
+                                  userController.appendAccessories(imageUrl);
+                                }
+                                createCollectionInUserCollection(
                                     imageUrl, name.toLowerCase());
                               }
                             } catch (e) {
@@ -134,28 +145,5 @@ class Items extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-void createRecordInUserCollection(imageUrl, collectionName) async {
-  // Create a CollectionReference called users that references the firestore collection
-  CollectionReference users = FirebaseFirestore.instance.collection('users');
-
-  FirebaseAuth auth = FirebaseAuth.instance;
-  final User? user = auth.currentUser;
-  final uid = user!.uid;
-  // try and catch user creation, check if already exists and update if so
-  try {
-    // add colllectionname withing users collection
-    await users
-        .doc(uid)
-        .update({
-          collectionName: FieldValue.arrayUnion([imageUrl]),
-        })
-        .then((value) => print("Image added to $collectionName field"))
-        .catchError((error) =>
-            print("Failed to add image to $collectionName field: $error"));
-  } catch (e) {
-    print(e);
   }
 }

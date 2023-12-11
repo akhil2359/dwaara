@@ -1,8 +1,12 @@
+// ignore_for_file: invalid_use_of_protected_member
+
 import 'package:Dwaara/components/items.dart';
+import 'package:Dwaara/controllers/user_controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -15,48 +19,42 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 1;
-  String username = "";
-  String email = "";
-  String profilepicture = "";
-  String uid = "";
+  UserController userController = Get.put(UserController());
 
-  List<String> shirtsList = [];
-  List<String> pantsList = [];
-  List<String> shoesList = [];
-  List<String> accessoriesList = [];
-
-  // init state
+  @override
   void initState() {
     super.initState();
-    getUserDetails();
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      getUserDetails();
+    });
   }
 
   void getUserDetails() async {
-    // get user details from firestore
     final User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      uid = user.uid;
-      final DocumentSnapshot<Map<String, dynamic>> userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      final Map<String, dynamic>? data = userDoc.data();
-      print("xxxdataxxx");
-      print(data);
-      if (data != null) {
-        // check if shirs, pants, shoes, accessories are not null
-        if (data['shirts'] != null) {
-          setState(() {
-            shirtsList = data['shirts'].cast<String>();
-          });
+      final String uid = user.uid;
+      try {
+        final DocumentSnapshot<Map<String, dynamic>> userDoc =
+            await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        final Map<String, dynamic>? data = userDoc.data();
+        print("xxxdataxxx");
+        print(data);
+        if (data != null) {
+          if (data['shirts'] != null) {
+            userController.updateShirts(data['shirts'].cast<String>());
+          }
+          if (data['pants'] != null) {
+            userController.updatePants(data['pants'].cast<String>());
+          }
+          if (data['shoes'] != null) {
+            userController.updateShoes(data['shoes'].cast<String>());
+          }
+          if (data['accessories'] != null) {
+            userController.updateAccessories(data['accessories'].cast<String>());
+          }
         }
-        if (data['pants'] != null) {
-          pantsList = data['pants'].cast<String>();
-        }
-        if (data['shoes'] != null) {
-          shoesList = data['shoes'].cast<String>();
-        }
-        if (data['accessories'] != null) {
-          accessoriesList = data['accessories'].cast<String>();
-        }
+      } catch (e) {
+        print("Error fetching user details: $e");
       }
     }
   }
@@ -66,7 +64,6 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        // logo leading from assets
         leading: Image.asset("assets/icon/logo.png"),
         title: const Text(
           Home._title,
@@ -76,50 +73,57 @@ class _HomeState extends State<Home> {
         elevation: 0.0,
       ),
       body: SingleChildScrollView(
-        child: Column(children: [
-          Items(items: shirtsList, name: 'Shirts'),
-          Items(items: pantsList, name: 'Pants'),
-          Items(items: shoesList, name: 'Shoes'),
-          Items(items: accessoriesList, name: 'Accessories'),
-        ]),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.house),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.shirt),
-            label: '',
-          ),
-          // item with circle avatar with profile picture url from args , if empty add letters of name
-          BottomNavigationBarItem(
-            icon: profilepicture.isNotEmpty
-                ? CircleAvatar(
-                    radius: 15,
-                    backgroundImage: NetworkImage(profilepicture),
-                  )
-                : CircleAvatar(
-                    radius: 15,
-                    backgroundColor:
-                        Colors.blue, // Set a background color of your choice
-                    child: Text(
-                      username.isNotEmpty ? username[0].toUpperCase() : '',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-            label: '',
-          ),
+  child: Column(
+    children: [
+      Column(
+        children: [
+          Obx(() => Items(items: userController.shirts.value, name: 'Shirts')),
+          Obx(() => Items(items: userController.pants.value, name: 'Pants')),
+          Obx(() => Items(items: userController.shoes.value, name: 'Shoes')),
+          Obx(() => Items(items: userController.accessories.value, name: 'Accessories')),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.black,
-        onTap: (int index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-        },
       ),
+    ],
+  ),
+),
+      bottomNavigationBar: Obx(() => BottomNavigationBar(
+            items: <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: FaIcon(FontAwesomeIcons.house),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: FaIcon(FontAwesomeIcons.shirt),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                icon: userController.imageurl.isNotEmpty
+                    ? CircleAvatar(
+                        radius: 15,
+                        backgroundImage:
+                            NetworkImage(userController.imageurl.value),
+                      )
+                    : CircleAvatar(
+                        radius: 15,
+                        backgroundColor: Colors.blue,
+                        child: Text(
+                          userController.name.isNotEmpty
+                              ? userController.name.value.substring(0, 1)
+                              : '',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                label: '',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            selectedItemColor: Colors.black,
+            onTap: (int index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+            },
+          )),
     );
   }
 }

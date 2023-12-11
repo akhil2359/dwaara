@@ -1,8 +1,12 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:Dwaara/screens/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:get/get.dart';
+
+import '../controllers/user_controller.dart';
+import '../services/auth.dart';
+import '../services/firestore.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -12,6 +16,8 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  UserController userController = Get.put(UserController());
+
   @override
   void initState() {
     super.initState();
@@ -22,55 +28,32 @@ class _LoginState extends State<Login> {
 
   Future<void> checkCurrentUser() async {
     final User? user = FirebaseAuth.instance.currentUser;
+    // print
+
     if (user != null) {
-      final String? userId = user.uid;
-      final String? username = user.displayName;
-      final String? email = user.email;
-      final String? profilepicture = user.photoURL;
+      print("user is already logged in");
+      updateUser(user);
+    } else {
+      print("user is not logged in");
+    }
+  }
 
-      print(">>>>>>>>>>>>>>>>>>>>User IDx: $userId");
-      print("User is logged in already");
-      print("Username: $username");
-      print("Email: $email");
-      print("Profile Picture: $profilepicture");
+  void updateUser(User user) async {
+    final String userId = user.uid ?? '';
+    final String username = user.displayName ?? '';
+    final String email = user.email ?? '';
+    final String profilepicture = user.photoURL ?? '';
 
-      // get shirts, pants, shoes, accessories collection from users image urls and assign it to respective variables of list type
-      // get shirts, pants, shoes, accessories collection from users image urls and assign it to respective variables of list type
+    userController.updateUid(userId);
+    userController.updateName(username);
+    userController.updateEmail(email);
+    userController.updateImageUrl(profilepicture);
 
-      // final DocumentSnapshot<Map<String, dynamic>> userDoc =
-      //     await FirebaseFirestore.instance
-      //         .collection('users')
-      //         .doc(userId)
-      //         .get();
-      // final Map<String, dynamic>? data = userDoc.data();
-      // if (data != null) {
-      //   print("xxxxxxdata is not null");
-      //   print(data);
-      //   // get shirts, pants, shoes, accessories collection from users image urls and assign it to respective variables of list type
-      //   final List<dynamic>? shirtsList = data['shirts'];
-      //   final List<dynamic>? pantsList = data['pants'];
-      //   final List<dynamic>? shoesList = data['shoes'];
-      //   final List<dynamic>? accessoriesList = data['accessories'];
-      //      print("shirts: $shirtsList");
-      //   print("pants: $pantsList");
-      //   print("shoes: $shoesList");
-      //   print("accessories: $accessoriesList");
-      // }
-      createRecordInUserCollection(username, email, profilepicture);
-      if (mounted) {
-        // print shirts, pants, shoes, accessories
-     
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/home',
-          (route) => false,
-          arguments: {
-            'username': username ?? '',
-            'email': email ?? '',
-            'profilepicture': profilepicture ?? '',
-          },
-        );
-      }
+    
+
+    createRecordInUserCollection(userId, username, email, profilepicture);
+    if (mounted) {
+      Get.offAll(Home());
     }
   }
 
@@ -132,74 +115,11 @@ class _LoginState extends State<Login> {
     );
   }
 
-  void createRecordInUserCollection(Name, Email, ProfilePicture) async {
-    // Create a CollectionReference called users that references the firestore collection
-    CollectionReference users = FirebaseFirestore.instance.collection('users');
-
-    FirebaseAuth auth = FirebaseAuth.instance;
-    final User? user = auth.currentUser;
-    final uid = user!.uid;
-    // try and catch user creation, check if already exists and update if so
-    try {
-      await users
-          .doc(uid)
-          .set({
-            'name': Name,
-            'email': Email,
-            'profilepicture': ProfilePicture,
-          }, SetOptions(merge: true))
-          .then((value) => print("User Added"))
-          .catchError((error) => print("Failed to add user: $error"));
-    } catch (e) {
-      print(e);
-    }
-  }
-
   void handleGoogleSignIn() async {
     User? user = await signInWithGoogle();
     if (user != null) {
-      final String? userId = user.uid;
-      final String? username = user.displayName;
-      final String? email = user.email;
-      final String? profilepicture = user.photoURL;
-      createRecordInUserCollection(username, email, profilepicture);
-      print(">>>>>>>>>>>>>>>>>>>>User IDs: $userId");
-      if (mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/home',
-          (route) => false,
-          arguments: {
-            'username': username ?? '',
-            'email': email ?? '',
-            'profilepicture': profilepicture ?? '',
-          },
-        );
-      }
+      updateUser(user);
     }
-  }
-
-  Future<User?> signInWithGoogle() async {
-    final FirebaseAuth auth = FirebaseAuth.instance;
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-
-    final GoogleSignInAccount? googleSignInAccount =
-        await googleSignIn.signIn();
-
-    final GoogleSignInAuthentication googleSignInAuthentication =
-        await googleSignInAccount!.authentication;
-
-    final AuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: googleSignInAuthentication.accessToken,
-      idToken: googleSignInAuthentication.idToken,
-    );
-
-    final UserCredential userCredential =
-        await auth.signInWithCredential(credential);
-    final User? user = userCredential.user;
-    print("xxxx user: ");
-    print(user);
-    return user;
   }
 
   Widget buttonItem(
@@ -281,9 +201,7 @@ class _LoginState extends State<Login> {
 
   Widget colorButton(String name) {
     return InkWell(
-      onTap: () async {
-        // Your login logic here
-      },
+      onTap: () async {},
       child: Container(
         width: MediaQuery.of(context).size.width - 90,
         height: 60,
