@@ -1,4 +1,3 @@
-import 'package:Dwaara/screens/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -7,6 +6,7 @@ import 'package:get/get.dart';
 import '../controllers/user_controller.dart';
 import '../services/auth.dart';
 import '../services/firestore.dart';
+import 'home.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -21,41 +21,9 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      checkCurrentUser();
-    });
   }
 
-  Future<void> checkCurrentUser() async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    // print
 
-    if (user != null) {
-      print("user is already logged in");
-      updateUser(user);
-    } else {
-      print("user is not logged in");
-    }
-  }
-
-  void updateUser(User user) async {
-    final String userId = user.uid ?? '';
-    final String username = user.displayName ?? '';
-    final String email = user.email ?? '';
-    final String profilepicture = user.photoURL ?? '';
-
-    userController.updateUid(userId);
-    userController.updateName(username);
-    userController.updateEmail(email);
-    userController.updateImageUrl(profilepicture);
-
-    
-
-    createRecordInUserCollection(userId, username, email, profilepicture);
-    if (mounted) {
-      Get.offAll(Home());
-    }
-  }
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -79,10 +47,13 @@ class _LoginState extends State<Login> {
             children: [
               const SizedBox(height: 20),
               // logo image here
-              Image(
-                  image: AssetImage("assets/icon/logo.png"),
-                  width: 200,
-                  height: 200),
+              Hero(
+                tag: 'logo',
+                child: Image(
+                    image: AssetImage("assets/icon/logo.png"),
+                    width: 200,
+                    height: 200),
+              ),
               const SizedBox(height: 20),
               buttonItem("assets/google.svg", "Continue with Google", 25, () {
                 handleGoogleSignIn();
@@ -113,6 +84,25 @@ class _LoginState extends State<Login> {
         ),
       ),
     );
+  }
+
+    void updateUser(User user) async {
+    final String userId = user.uid ?? '';
+    final String username = user.displayName ?? '';
+    final String email = user.email ?? '';
+    final String profilepicture = user.photoURL ?? '';
+
+    userController.updateUid(userId);
+    userController.updateName(username);
+    userController.updateEmail(email);
+    userController.updateImageUrl(profilepicture);
+
+    
+
+    createRecordInUserCollection(userId, username, email, profilepicture);
+    if (mounted) {
+      Get.offAll(Home());
+    }
   }
 
   void handleGoogleSignIn() async {

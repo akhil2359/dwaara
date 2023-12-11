@@ -2,6 +2,9 @@
 
 import 'package:Dwaara/components/items.dart';
 import 'package:Dwaara/controllers/user_controller.dart';
+import 'package:Dwaara/screens/matching.dart';
+import 'package:Dwaara/screens/profile.dart';
+import 'package:Dwaara/screens/upload.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +23,22 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int _selectedIndex = 1;
   UserController userController = Get.put(UserController());
+
+  List bottomNavigatorOptions = [
+    {
+      'title': 'Outfits',
+      'widget': Matching(),
+    },
+    {
+      'title': 'Wardobe',
+      'widget': Upload(),
+    },
+    {
+      'title': 'Profile',
+      'widget': Profile(),
+    },
+  ];
+   
 
   @override
   void initState() {
@@ -64,28 +83,17 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        leading: Image.asset("assets/icon/logo.png"),
-        title: const Text(
-          Home._title,
-          style: TextStyle(color: Colors.black, fontStyle: FontStyle.italic),
+        leading: Hero(tag: 'logo', child: Image.asset("assets/icon/logo.png")),
+        title:  Text(
+          bottomNavigatorOptions[_selectedIndex]['title'] as String,
+          style: TextStyle(color: Colors.black),
         ),
         centerTitle: true,
         elevation: 0.0,
       ),
-      body: SingleChildScrollView(
-  child: Column(
-    children: [
-      Column(
-        children: [
-          Obx(() => Items(items: userController.shirts.value, name: 'Shirts')),
-          Obx(() => Items(items: userController.pants.value, name: 'Pants')),
-          Obx(() => Items(items: userController.shoes.value, name: 'Shoes')),
-          Obx(() => Items(items: userController.accessories.value, name: 'Accessories')),
-        ],
+      body: Container(
+        child: bottomNavigatorOptions[_selectedIndex]['widget'] as Widget,
       ),
-    ],
-  ),
-),
       bottomNavigationBar: Obx(() => BottomNavigationBar(
             items: <BottomNavigationBarItem>[
               BottomNavigationBarItem(

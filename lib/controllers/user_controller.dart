@@ -59,4 +59,15 @@ class UserController extends GetxController {
   void updateAccessories(List<String> newAccessories) {
     accessories.assignAll(newAccessories);
   }
+
+  void resetAllStates() {
+    uid.value = '';
+    name.value = '';
+    email.value = '';
+    imageurl.value = '';
+    shirts.clear();
+    pants.clear();
+    shoes.clear();
+    accessories.clear();
+  }
 }

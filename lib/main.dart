@@ -1,5 +1,6 @@
 import 'package:Dwaara/screens/home.dart';
 import 'package:Dwaara/screens/login.dart';
+import 'package:Dwaara/screens/splash.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
-        '/': (BuildContext context) => const Login(),
+        '/': (BuildContext context) => const Splash(),
         '/login': (BuildContext context) => Login(),
         '/home': (BuildContext context) => const Home(),
       },
