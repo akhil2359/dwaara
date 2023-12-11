@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
 
@@ -21,20 +20,46 @@ class _LoginState extends State<Login> {
     });
   }
 
-    Future<void> checkCurrentUser() async {
+  Future<void> checkCurrentUser() async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      final String? userId ="1234xx";
+      final String? userId = user.uid;
       final String? username = user.displayName;
       final String? email = user.email;
       final String? profilepicture = user.photoURL;
+
       print(">>>>>>>>>>>>>>>>>>>>User IDx: $userId");
       print("User is logged in already");
       print("Username: $username");
       print("Email: $email");
       print("Profile Picture: $profilepicture");
+
+      // get shirts, pants, shoes, accessories collection from users image urls and assign it to respective variables of list type
+      // get shirts, pants, shoes, accessories collection from users image urls and assign it to respective variables of list type
+
+      // final DocumentSnapshot<Map<String, dynamic>> userDoc =
+      //     await FirebaseFirestore.instance
+      //         .collection('users')
+      //         .doc(userId)
+      //         .get();
+      // final Map<String, dynamic>? data = userDoc.data();
+      // if (data != null) {
+      //   print("xxxxxxdata is not null");
+      //   print(data);
+      //   // get shirts, pants, shoes, accessories collection from users image urls and assign it to respective variables of list type
+      //   final List<dynamic>? shirtsList = data['shirts'];
+      //   final List<dynamic>? pantsList = data['pants'];
+      //   final List<dynamic>? shoesList = data['shoes'];
+      //   final List<dynamic>? accessoriesList = data['accessories'];
+      //      print("shirts: $shirtsList");
+      //   print("pants: $pantsList");
+      //   print("shoes: $shoesList");
+      //   print("accessories: $accessoriesList");
+      // }
       createRecordInUserCollection(username, email, profilepicture);
       if (mounted) {
+        // print shirts, pants, shoes, accessories
+     
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/home',
@@ -48,7 +73,6 @@ class _LoginState extends State<Login> {
       }
     }
   }
-
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -123,12 +147,12 @@ class _LoginState extends State<Login> {
             'name': Name,
             'email': Email,
             'profilepicture': ProfilePicture,
-          })
+          }, SetOptions(merge: true))
           .then((value) => print("User Added"))
           .catchError((error) => print("Failed to add user: $error"));
     } catch (e) {
       print(e);
-    } 
+    }
   }
 
   void handleGoogleSignIn() async {

@@ -1,4 +1,6 @@
 import 'package:Dwaara/components/items.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -13,25 +15,50 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _selectedIndex = 1;
-
   String username = "";
   String email = "";
   String profilepicture = "";
+  String uid = "";
 
-  @override
+  List<String> shirtsList = [];
+  List<String> pantsList = [];
+  List<String> shoesList = [];
+  List<String> accessoriesList = [];
+
+  // init state
   void initState() {
     super.initState();
-    Future.delayed(Duration.zero, () {
-      Map<String, dynamic>? args =
-          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-      if (args != null) {
-        setState(() {
-          username = args['username'] as String;
-          email = args['email'] as String;
-          profilepicture = args['profilepicture'] as String;
-        });
+    getUserDetails();
+  }
+
+  void getUserDetails() async {
+    // get user details from firestore
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      uid = user.uid;
+      final DocumentSnapshot<Map<String, dynamic>> userDoc =
+          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final Map<String, dynamic>? data = userDoc.data();
+      print("xxxdataxxx");
+      print(data);
+      if (data != null) {
+        // check if shirs, pants, shoes, accessories are not null
+        if (data['shirts'] != null) {
+          setState(() {
+            shirtsList = data['shirts'].cast<String>();
+          });
+        }
+        if (data['pants'] != null) {
+          pantsList = data['pants'].cast<String>();
+        }
+        if (data['shoes'] != null) {
+          shoesList = data['shoes'].cast<String>();
+        }
+        if (data['accessories'] != null) {
+          accessoriesList = data['accessories'].cast<String>();
+        }
       }
-    });
+    }
   }
 
   @override
@@ -48,120 +75,12 @@ class _HomeState extends State<Home> {
         centerTitle: true,
         elevation: 0.0,
       ),
-      body:
-          // scrollview vertical
-          SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Column(children: [
-          Items(name: 'Shirts', items: [
-            {
-              "name": "item1",
-              "price": 100,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item2",
-              "price": 200,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item3",
-              "price": 300,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item4",
-              "price": 400,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item5",
-              "price": 500,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item6",
-              "price": 600,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item7",
-              "price": 700,
-              "image": "https://picsum.photos/200/300"
-            }
-          ]),
-          Items(name: 'Pants', items: [
-            {
-              "name": "item1",
-              "price": 100,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item2",
-              "price": 200,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item3",
-              "price": 300,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item4",
-              "price": 400,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item5",
-              "price": 500,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item6",
-              "price": 600,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item7",
-              "price": 700,
-              "image": "https://picsum.photos/200/300"
-            }
-          ]),
-          Items(name: 'Shoes', items: [
-            {
-              "name": "item1",
-              "price": 100,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item2",
-              "price": 200,
-              "image": "https://picsum.photos/200/300"
-            },
-        
-          ]),
-          Items(name: 'Accessories', items: [
-            {
-              "name": "item1",
-              "price": 100,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item2",
-              "price": 200,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item3",
-              "price": 300,
-              "image": "https://picsum.photos/200/300"
-            },
-            {
-              "name": "item4",
-              "price": 400,
-              "image": "https://picsum.photos/200/300"
-            },
-      
-          ])
+          Items(items: shirtsList, name: 'Shirts'),
+          Items(items: pantsList, name: 'Pants'),
+          Items(items: shoesList, name: 'Shoes'),
+          Items(items: accessoriesList, name: 'Accessories'),
         ]),
       ),
       bottomNavigationBar: BottomNavigationBar(
