@@ -38,11 +38,11 @@ class _HomeState extends State<Home> {
       'widget': Profile(),
     },
   ];
-   
 
   @override
   void initState() {
     super.initState();
+    print(">>>> AKHIL >>>>>");
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       getUserDetails();
     });
@@ -56,7 +56,7 @@ class _HomeState extends State<Home> {
         final DocumentSnapshot<Map<String, dynamic>> userDoc =
             await FirebaseFirestore.instance.collection('users').doc(uid).get();
         final Map<String, dynamic>? data = userDoc.data();
-        print("xxxdataxxx");
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> xxxdataxxx");
         print(data);
         if (data != null) {
           if (data['shirts'] != null) {
@@ -69,7 +69,8 @@ class _HomeState extends State<Home> {
             userController.updateShoes(data['shoes'].cast<String>());
           }
           if (data['accessories'] != null) {
-            userController.updateAccessories(data['accessories'].cast<String>());
+            userController
+                .updateAccessories(data['accessories'].cast<String>());
           }
         }
       } catch (e) {
@@ -84,7 +85,7 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading: Hero(tag: 'logo', child: Image.asset("assets/icon/logo.png")),
-        title:  Text(
+        title: Text(
           bottomNavigatorOptions[_selectedIndex]['title'] as String,
           style: TextStyle(color: Colors.black),
         ),

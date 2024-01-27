@@ -32,6 +32,8 @@ class _SplashState extends State<Splash> {
 
     if (user != null) {
       print("user is already logged in");
+      // PRINT USER ID
+      print(user.uid);
       updateUser(user);
     } else {
       Get.offAll(Login());

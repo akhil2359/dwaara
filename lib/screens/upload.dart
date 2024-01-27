@@ -24,14 +24,14 @@ class _UploadState extends State<Upload> {
           Column(
             children: [
               Obx(() =>
-                  Items(items: userController.shirts.value, name: 'Shirts')),
+                  Items(items: userController.shirts.value, name: 'Shirts', context: context)),
               Obx(() =>
-                  Items(items: userController.pants.value, name: 'Pants')),
+                  Items(items: userController.pants.value, name: 'Pants', context: context)),
               Obx(() =>
-                  Items(items: userController.shoes.value, name: 'Shoes')),
+                  Items(items: userController.shoes.value, name: 'Shoes', context: context)),
               Obx(() => Items(
                   items: userController.accessories.value,
-                  name: 'Accessories')),
+                  name: 'Accessories', context: context)),
             ],
           ),
         ],
