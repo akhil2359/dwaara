@@ -34,31 +34,33 @@ class Items extends StatelessWidget {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
-              TextButton(
-                onPressed: () {
-                  // Open the List screen when "View All" is clicked
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Container(
-                        child: ListScreen(
-                          items: items,
-                          title: name,   
-                          context: context,
+              // show view all only if items are greater than 4
+              if (items.length > 4)
+                TextButton(
+                  onPressed: () {
+                    // Open the List screen when "View All" is clicked
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Container(
+                          child: ListScreen(
+                            items: items,
+                            title: name,   
+                            context: context,
+                          ),
                         ),
                       ),
+                    );
+                  },
+                  child: const Text(
+                    "View All",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
                     ),
-                  );
-                },
-                child: const Text(
-                  "View All",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
-              )
+                )
             ],
           ),
           Container(
